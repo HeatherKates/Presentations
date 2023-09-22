@@ -2,9 +2,9 @@
 title: "Bioinformatics Analyst III"
 subtitle: "Biomedical Informatics Program (BMI)"
 author: "Candidate: Heather Kates"
-format: revealjs
-editor: visual
-self_contained: true
+format: 
+  revealjs:
+    self_contained: true
 ---
 
 ## Guiding principles<br><br>
@@ -21,11 +21,11 @@ self_contained: true
 
 <font size="7">
 
-1. Population genomics with exome-seq
+1.  Population genomics with exome-seq
 
-2. Massive phylogenetics with hyb-seq
+2.  Massive phylogenetics with hyb-seq
 
-3. End-to-end R pipeline for metabolomics core </font>
+3.  End-to-end R pipeline for metabolomics core </font>
 
 ## Highlighted bioinformatics projects<br><br>
 
