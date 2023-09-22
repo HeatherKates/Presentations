@@ -1,0 +1,231 @@
+---
+title: "Bioinformatics Analyst III"
+subtitle: "Biomedical Informatics Program (BMI)"
+author: "Candidate: Heather Kates"
+format: revealjs
+editor: visual
+self_contained: true
+---
+
+## Guiding principles<br><br>
+
+<font size="7">
+
+-   Reproducibility
+
+-   Efficiency
+
+-   Creativity </font>
+
+## Highlighted bioinformatics projects<br><br>
+
+<font size="7">
+
+1. Population genomics with exome-seq
+
+2. Massive phylogenetics with hyb-seq
+
+3. End-to-end R pipeline for metabolomics core </font>
+
+## Highlighted bioinformatics projects<br><br>
+
+<font size="7">
+
+1.  Population genomics with exome-seq
+
+<span style="color: gray;">2. Massive phylogenetics with hyb-seq
+
+<span style="color: gray;">3. End-to-end R pipeline for metabolomics core </font>
+
+## 1. [Population genomics with exome-seq](https://www.frontiersin.org/articles/10.3389/fevo.2021.618380/full#h3)
+
+[Aim](https://www.frontiersin.org/files/Articles/618380/fevo-09-618380-HTML/image_m/fevo-09-618380-g005.jpg): Identify regions of the genome with reduced genetic diversity in crops relative to wild
+
+Step 1: Identify exome genes to target and sequence
+
+-   [Bash pipeline to identify genes to sequence](https://www.sciencedirect.com/science/article/pii/S1055790317301811?casa_token=3n1W3eNlvhgAAAAA:l7kW1KUsTjVHogkSwX862SlReLzT8RbHb4KI9SLsB4CW6U7szoyMghGkewRxmRsWixvzKJ7Cmv8#s0105)
+
+-   [Mining publicly available genomes for SNPs](https://github.com/HeatherKates/Locus_selection_for_RAPiD/tree/master)
+
+Step 2: NGS DNA sequence processing
+
+Step 3: Exome-wide genetic diversity analysis
+
+## NGS DNA sequence processing
+
+<font size="5">
+
+| Process                                | Software                         | Samples |
+|----------------------------|------------------------|--------------------|
+| Barcode splitting, filtering, trimming | FASTX toolkit (bash, hipergator) | 96      |
+| Align reads to reference genome        | MOSAIK 2.3.2                     | 96      |
+| SNP calling                            | FREEBAYES 0.9.15                 | 96      |
+| SNP quality-filtering                  | VCFtools                         | 96      |
+
+</font>
+
+## Exome-wide genetic diversity analysis
+
+<font size="5">
+
+| Process                                                  | Software                                     | Independent executions                   |
+|-----------------------|-----------------------|--------------------------|
+| Estimation of population structure                       | STRUCTURE (bash on hipergator)               | 2 datasets x 10 burn-ins x 10 *K* values |
+| Phylogenetic tree building                               | SNPhylo (bash on hipergator)                 | 2 data sets                              |
+| Genetic diversity calculation and GO enrichment analysis | 4P (bash on hipergator), AmiGo (RamiGO in R) | 2 data sets                              |
+| Map genes to chromosome position                         | PopGenome (R)                                | 2 data sets                              |
+
+</font>
+
+## Highlighted bioinformatics projects<br><br>
+
+<font size="7">
+
+[1. Population genomics with exome-seq]{style="color: gray;"}
+
+2.  Massive phylogenetics with hyb-seq
+
+3.  End-to-end R pipeline for metabolomics core </font>
+
+## 2. [Massive phylogenetics with hyb-seq](https://www.biorxiv.org/content/10.1101/2022.07.31.502231v1)
+
+[Aim](https://github.com/HeatherKates/Nitfix-Recon/blob/main/Figures/Tree_Figure_NatureComm.png): Produce the single largest *de novo* phylogenetic dataset constructed to date (*n* = 12,768 ingroup species)
+
+[Management of high throughput specimen data](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7910806/)
+
+-   SQLite3 database to store and query project data
+
+-   Transfer and Storage of hundreds of fastq.gz files weekly
+
+[NGS DNA sequence processing and assembly](https://www.frontiersin.org/articles/10.3389/fpls.2021.669064/full)
+
+[Massively parallel phylogenetic analysis](https://www.biorxiv.org/content/10.1101/2022.07.31.502231v1)
+
+## NGS DNA sequence processing and assembly
+
+<font size="5">
+
+| Process                                     | Software                                                                    | Independent executions   |
+|----------------------------|------------------------|--------------------|
+| Trimming and quality-filtering              | Trimmomatic v. 0.39 (bash, hipergator)                                      | 14,769                   |
+| Quality control                             | FastQC (bash, hipergator)                                                   | 14,769                   |
+| Auxilary module: Calculate on-target reads: | Map to reference with BWA v. 0.7.17 + post-processing with samtools v. 1.10 | 14,769                   |
+| Contamination removal                       | aTRAM v. 2.0 (SPAdes wrapper) + custom BLAST script                         | 14,769                   |
+| *De novo* contig assembly                   | SPAdes                                                                      | 14,769                   |
+| Custom gene assembly and paralog removal    | Custom bash (aTRAM assembly, mafft alignment, FastTree phylogeny, and more) | 100 genes x 13 data sets |
+
+</font>
+
+## Custom single-copy-gene assembly pipeline
+
+``` bash
+[hkates@login9 SCN-gene-pipeline-git]$ ls
+Assemblies_to_SCN.bash  LICENSE  README.md  Test_Data
+[hkates@login9 SCN-gene-pipeline-git]$ more Assemblies_to_SCN.bash 
+#!/bin/bash
+
+#The output of this program is $SUBANALYSIS_$LOCUS.single.copy.framed_contigsrr.fa and is a fasta file of all the single copy genes' contigs for a particular locus
+#And set of samples. This file can be aligned for gene tree building or concatenation or combined with same files from other sample sets.
+
+#Adjust the following variables for each locus and sampleset
+LOCUS=001
+SUBANALYSIS=Moraceae
+DIR=Test_Data/ #Name of directory where input files are
+#Requirements to run:
+#All de novo assembled contigs to be included in the analysis should be in a folder named Assemblies/ in DI
+R. There can be assemblies from other subanalyses and loci 
+#In Assemblies/ as long as LOCUS is set and a file of the samples of interest is passed to -T
+module load exonerate gcc/8.2.0 phyx mafft fasttree atram
+#A file of sample names to be passed to -T in DIR.
+#A reference sequence fasta in DIR. The name of the sequence (header) in the fasta file must match a string
+ in the name of the assemblies
+
+atram_framer.py -T ${DIR}${SUBANALYSIS}_Taxa.txt -a ${DIR}Assemblies/ -r ${DIR}Locus_${LOCUS}.fasta -o ${DI
+R}framed_contigs.${SUBANALYSIS} -l ${DIR}framer.Locus_${LOCUS}.log -m 350
+#Impose a coverage cutoff to decide what sequences to drop from the framed contigs
+#{1..n} where n = coverage cutoff, keeping in mind that spades header coverage is ~0.4X coverage (so n=2 is 4x coverage, roughly). change if desired.
+for i in {1..19}; do grep c${i}s ${DIR}framed_contigs.${SUBANALYSIS}.Locus_${LOCUS}.fasta >> ${DIR}${SUBANALYSIS}.Drop_seqs.txt; done
+
+#Use phyx to remove the low cov contigs
+sed -i 's/>//g' ${DIR}${SUBANALYSIS}.Drop_seqs.txt
+pxrms -s ${DIR}framed_contigs.${SUBANALYSIS}.Locus_${LOCUS}.fasta -f ${DIR}${SUBANALYSIS}.Drop_seqs.txt -o 
+${DIR}framed_contigs.${SUBANALYSIS}.Locus_${LOCUS}.fasta.rms
+
+#Align framed contig with mafft and build tree with fasttree. Software can be changed.
+mafft ${DIR}framed_contigs.${SUBANALYSIS}.Locus_${LOCUS}.fasta.rms > ${DIR}framed_contigs.Locus_${LOCUS}.fa
+sta.rms.aln
+sed -i '/^>/! s/n/-/g' ${DIR}framed_contigs.Locus_${LOCUS}.fasta.rms.aln
+pxclsq -p 0.1 -s ${DIR}framed_contigs.Locus_${LOCUS}.fasta.rms.aln -o ${DIR}framed_contigs.Locus_${LOCUS}.f
+asta.aln-cln
+FastTree -nt ${DIR}framed_contigs.Locus_${LOCUS}.fasta.aln-cln > ${DIR}framed_contigs.Locus_${LOCUS}.fasta.
+aln-cln.tre
+
+module load python/2.7.14 
+#(older version of python is needed for the scripts below)
+#Prune tree based on branch lengths (Yang and Smith)
+#change relative-cutoff and absolute-cutoff after viewing tree
+python /blue/soltis/share/Greg_HR_Nitfix/phylogenomic_dataset_construction/scripts/trim_tips.py ${DIR} tre 
+5 .3
+#Reduce clades that are all one taxon to a single tip (masking)
+python /blue/soltis/share/Greg_HR_Nitfix/phylogenomic_dataset_construction/scripts/mask_tips_by_taxonID_tra
+nscripts.py ${DIR} ${DIR} y
+#Write fasta file for the tips that remain in the pruned tree
+python /blue/soltis/share/Greg_HR_Nitfix/phylogenomic_dataset_construction/scripts/write_fasta_files_from_t
+rees.py ${DIR}framed_contigs.Locus_${LOCUS}.fasta.aln-cln ${DIR} mm ${DIR}
+
+#Make csv of counts of how many contigs are left per sample
+grep ">" ${DIR}framed_contigs.Locus_${LOCUS}.fasta.aln-cln|cut -d "@" -f 1|sort|uniq > ${DIR}Taxa.rr.txt
+while read file; do echo -ne Locus_${LOCUS},${file}, && grep -c $file ${DIR}framed_contigsrr.fa ; done < ${
+DIR}Taxa.rr.txt|sed 's/>//g' > ${DIR}${SUBANALYSIS}_${LOCUS}.Taxa_contigs_per_locus_counts.csv
+
+#Remove samples with more than one contigs from the alignment
+for i in `awk -F "," '{if ($3=="1") print $2;}' ${DIR}${SUBANALYSIS}_${LOCUS}.Taxa_contigs_per_locus_counts
+.csv`
+do grep -A1 $i ${DIR}framed_contigsrr.fa|cut -d "@" -f 1 >> ${DIR}${SUBANALYSIS}_${LOCUS}.single.copy.frame
+d_contigsrr.fa; done
+```
+
+## Massively parallel phylogenetic analysis
+
+<font size="5">
+
+| Process                  | Software                         | Independent executions   |
+|----------------------------|------------------------|--------------------|
+| Gene alignment           | MAFFT v7.294b (bash, hipergator) | 100 genes x 13 data sets |
+| Gene tree building       | IQ-tree (bash, hipergator)       | 100 genes x 13 data sets |
+| Supermatrix tree buiding | IQ-tree (bash, hipergator)       | 13 data sets             |
+| Species tree estimation  | ASTRAL-III (bash, hipergator)    | 13 data sets             |
+| Subtree scaffolding      | custom bash script (hipergator)  | NA                       |
+
+</font>
+
+## Highlighted bioinformatics projects<br><br>
+
+<font size="7">
+
+[1. Population genomics with exome-seq]{style="color: gray;"}
+
+<span style="color: gray;">2. Massive phylogenetics with hyb-seq
+
+3.  End-to-end R pipeline for metabolomics core </font>
+
+## 3. End-to-end R pipeline for metabolomics core
+
+[Aim](https://github.com/HeatherKates/SECIM_Reporting/blob/master/Example.Report.html): Provide automated and flexible end-to-end analysis and reporting of metabolomics data
+
+-   Ingest datasets in multiple formats
+
+-   Link all modules to enhance reproducibility
+
+<font size="4">
+
+| Process                                   | Software                         | Independent executions |
+|----------------------------|------------------------|--------------------|
+| Missing data imputation and normalization | Metaboanalyst (R, hipergator)    | As needed              |
+| Multivariate Statistics                   | car (R)                          | As needed              |
+| Univariate Statistics                     | stats (R), lmer (R), emmeans (R) | As needed              |
+| KEGG subnetwork estimation                | FELLA (R)                        | As needed              |
+| Visualizations                            | plotly (R)                       | As needed              |
+| Reporting method                          | R markdown (R); html output      | As needed              |
+
+</font>
